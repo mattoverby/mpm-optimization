@@ -1,8 +1,7 @@
 # mpm-optimiziation
 
-Optimization-based implicit material point method using L-BFGS,
-implemented from the [SIGGRAPH course notes](http://web.cs.ucla.edu/~cffjiang/mpmcourse/mpm_course_nodes.pdf)
-and [optimization paper](https://www.math.ucla.edu/~jteran/papers/GSSJT15.pdf). 
+Optimization-based implicit material point method with APIC,
+implemented from the [SIGGRAPH course notes](http://web.cs.ucla.edu/~cffjiang/mpmcourse/mpm_course_nodes.pdf), [optimization paper](https://www.math.ucla.edu/~jteran/papers/GSSJT15.pdf), and [APIC paper](https://disney-animation.s3.amazonaws.com/uploads/production/publication_asset/104/asset/apic-aselle-final.pdf).
 
 By Matt Overby  
 [http://www.mattoverby.net](http://www.mattoverby.net)
