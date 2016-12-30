@@ -42,6 +42,8 @@ bool Solver::initialize(){
 		}
 	}}}
 
+	// The boundaries are determined by these variables, and assumed positive.
+	// I.e. the boundary is 0 to gridsize*cellsize.
 	MPM::cellsize = Eigen::Vector3d(.5,.5,.5);
 	MPM::gridsize = Eigen::Vector3i(16,16,16);
 
