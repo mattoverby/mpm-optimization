@@ -280,8 +280,7 @@ void MPM::make_grid_loop( const Particle *p, std::vector<int> &grid_idx, std::ve
 	Wip.reserve(64);
 	dWip.reserve(64);
 
-	// Our smoothing kernel has a radius of 2, meaning
-	// we have 64 nodes 3D (or 16 nodes 2D) that the particle will contribute to.
+	// Our smoothing kernel has a radius of 2: 64 nodes 3D
 	Eigen::Vector3i normed_x = Eigen::Vector3i( p->x[0]/cellsize[0], p->x[1]/cellsize[1], p->x[2]/cellsize[2] );
 	Eigen::Vector3i ll_idx = normed_x - Eigen::Vector3i(1,1,1); // get the lowest-left index
 
