@@ -1,7 +1,7 @@
 # mpm-optimiziation
 
 Optimization-based implicit material point method with APIC,
-implemented from the [SIGGRAPH course notes](http://web.cs.ucla.edu/~cffjiang/mpmcourse/mpm_course_nodes.pdf), [optimization paper](https://www.math.ucla.edu/~jteran/papers/GSSJT15.pdf), and [APIC paper](https://disney-animation.s3.amazonaws.com/uploads/production/publication_asset/104/asset/apic-aselle-final.pdf).
+implemented from: [SIGGRAPH course notes](http://web.cs.ucla.edu/~cffjiang/mpmcourse/mpm_course_nodes.pdf), [Optimization Integrator for Large Time Steps](https://www.math.ucla.edu/~jteran/papers/GSSJT15.pdf), and [The Affine Particle-In-Cell Method](https://disney-animation.s3.amazonaws.com/uploads/production/publication_asset/104/asset/apic-aselle-final.pdf).
 
 By Matt Overby  
 [http://www.mattoverby.net](http://www.mattoverby.net)
