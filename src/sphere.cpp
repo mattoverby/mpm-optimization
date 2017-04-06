@@ -37,8 +37,8 @@ int main(int argc, char *argv[]){
 
 		solver.step( timestep );
 		vdb_frame();
-		for( int i=0; i<solver.m_particles.size(); ++i ){
-			Particle *p = solver.m_particles[i];
+		for( int j=0; j<solver.m_particles.size(); ++j ){
+			Particle *p = solver.m_particles[j];
 			vdb_point(p->x[0],p->x[1],p->x[2]);
 		}
 	}
