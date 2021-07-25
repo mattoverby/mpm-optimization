@@ -1,18 +1,18 @@
 # mpm-optimiziation
 
-***2021 Update***: I've copied the original blog post to this readme, updated code formatting, added rendering with libigl, and switched to [mcloptlib](https://github.com/mattoverby/mcloptlib)'s LBFGS.
-I wrote this in 2016 as an exercise, so please don't hold it against me :smile:.
-
 Optimization-based implicit material point method with APIC,
 implemented from: [SIGGRAPH course notes](http://web.cs.ucla.edu/~cffjiang/mpmcourse/mpm_course_nodes.pdf),
 [Optimization Integrator for Large Time Steps](https://www.math.ucla.edu/~jteran/papers/GSSJT15.pdf),
 and [The Affine Particle-In-Cell Method](https://disney-animation.s3.amazonaws.com/uploads/production/publication_asset/104/asset/apic-aselle-final.pdf).
 
+***2021 Update***: I've copied the original blog post to this readme, updated code formatting, added rendering with libigl, and switched to [mcloptlib](https://github.com/mattoverby/mcloptlib)'s LBFGS.
+I wrote this in 2016 as an exercise, so please don't hold it against me :smile:.
+
 ## Optimization-Based Material Point Method
 
 The Material Point Method (MPM) is a powerful technique for physics simulation.
 MPM is great for continuum substances like fluids and soft bodies, as well as for dealing with complex problems like fracture and self collisions.
-It has received a lot of attention in computer graphics, spurred by the snow simulation and phase change/heat transfer papers.
+It has received a lot of attention in computer graphics, spurred mostly by the [snow simulation](https://www.disneyanimation.com/publications/a-material-point-method-for-snow-simulation) paper.
 
 Some time around 2016 I coded up MPM to test out some research ideas, and wrote a little text to go along with it.
 My ideas didn't work out, but I put this code up on github instead of letting it collect metaphorical dust on my hard drive.
@@ -67,3 +67,5 @@ If you've ever done fluid simulation with PIC/FLIP, it should be straight forwar
 1. It seemed to help with stability to have a cell size large enough to fit 8-16 particles.
 2. Keep a fully-allocated grid as the domain boundary, but do minimization on a separate "active grid" list made up of pointers to grid nodes.
 3. A "make grid loop" function for particle/grid mapping: given a particle, return the indices of grid nodes within the kernel radius, as well as kernel smoothing values/derivatives. I felt this was the trickiest part of the whole method. Much of this can be preallocated if you have a lot of memory, but I found (in 3D) allocating/deallocating on the spot was helpful and easier to debug.
+
+The code uses libigl for rendering and Eigen for matrix/vector calculations. These are automatically downloaded with cmake.
