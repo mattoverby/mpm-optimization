@@ -19,30 +19,17 @@
 //
 // By Matt Overby (http://www.mattoverby.net)
 
-#ifndef MPM_SOLVER_H
-#define MPM_SOLVER_H 1
+#ifndef MPM_SOLVER_HPP
+#define MPM_SOLVER_HPP 1
 
-#include "cppoptlib/solver/lbfgssolver.h"
 #include "MPM.hpp"
+#include "MCL/LBFGS.hpp"
 
-namespace mpm {
+namespace mpm
+{
 
-class Solver;
-
-// The system as represented by an optimization problem for generic solvers
-class Objective : public cppoptlib::Problem<double> {
-public:
-	Objective( Solver *solver_ ) : solver(solver_) {}
-	double value(const cppoptlib::Vector<double> &v){ throw std::runtime_error("value: shouldn't get here"); }
-
-	// Computes value and gradient
-	double value_gradient(const cppoptlib::Vector<double> &v, cppoptlib::Vector<double> &grad);
-	Solver *solver;
-
-}; // end class ObjectiveSystem
-
-
-class Solver {
+class Solver
+{
 public:
 
 	Solver() : elapsed_s(0) {}
@@ -52,10 +39,11 @@ public:
 	//	Data
 	//
 
-	std::vector< GridNode* > m_grid;
-	std::vector< GridNode* > active_grid; // resized each time step
-	std::vector< Particle* > m_particles;
-	cppoptlib::lbfgssolver<double> solver;
+	std::vector<GridNode*> m_grid;
+	std::vector<GridNode*> active_grid; // resized each time step
+	std::vector<Particle*> m_particles;
+	void get_vertices(Eigen::MatrixXd &X) const;
+	mcl::optlib::LBFGS<double,Eigen::Dynamic> optimizer;
 
 	//
 	//	Settings
@@ -73,11 +61,11 @@ public:
 
 	// Run a timestep.
 	// Returns true on success.
-	bool step( float screen_dt );
+	bool step(float screen_dt);
 
 private:
 
-	double compute_timestep( double screen_dt );
+	double compute_timestep(double screen_dt);
 
 	//
 	//	Integration

@@ -20,29 +20,50 @@
 // By Matt Overby (http://www.mattoverby.net)
 
 #include "Solver.hpp"
-#include <vdb.h>
+#include <igl/opengl/glfw/Viewer.h>
 
-int main(int argc, char *argv[]){
+int main(int argc, char *argv[])
+{
 	using namespace mpm;
-
-	double timestep = 0.01;
+	using namespace Eigen;
 
 	Solver solver;
 	solver.initialize();
 
-	std::cout << "Hold enter to step" << std::endl;; 
-	int max_steps = 300;
-	for( int i=0; i<max_steps; ++i ){
-		std::cin.get(); 
+	MatrixXd V;
+	solver.get_vertices(V);
 
-		solver.step( timestep );
-		vdb_frame();
-		for( int j=0; j<solver.m_particles.size(); ++j ){
-			Particle *p = solver.m_particles[j];
-			vdb_point(p->x[0],p->x[1],p->x[2]);
+	// Also add ground plane
+	MatrixXd gV(4,3);
+	gV.row(0) = RowVector3d(0,0.75,0);
+	gV.row(1) = RowVector3d(6,0.75,0);
+	gV.row(2) = RowVector3d(6,0.75,6);
+	gV.row(3) = RowVector3d(0,0.75,6);
+	MatrixXi gF(2,3);
+	gF.row(0) = RowVector3i(0,2,1);
+	gF.row(1) = RowVector3i(0,3,2);
+
+	std::cout << "Press A to toggle animation" << std::endl;
+
+	// Create viewer
+	igl::opengl::glfw::Viewer viewer;
+	viewer.core().is_animating = false;
+	viewer.data().set_mesh(gV, gF);
+	viewer.data().add_points(V, Eigen::RowVector3d(1,0,0));
+	viewer.callback_pre_draw = [&](igl::opengl::glfw::Viewer&)->bool
+	{
+		if (viewer.core().is_animating)
+		{
+			solver.step(0.04);
+			solver.get_vertices(V);
+			viewer.data().clear();
+			viewer.data().set_mesh(gV, gF);
+			viewer.data().add_points(V, Eigen::RowVector3d(1,0,0));
 		}
-	}
+		return false;
+	};
+	viewer.launch();
 
-	return 0;
+	return EXIT_SUCCESS;
 }
 

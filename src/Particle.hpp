@@ -19,45 +19,50 @@
 //
 // By Matt Overby (http://www.mattoverby.net)
 
-#ifndef MPM_PARTICLE_H
-#define MPM_PARTICLE_H 1
+#ifndef MPM_PARTICLE_HPP
+#define MPM_PARTICLE_HPP 1
 
 #include <iostream>
 #include <memory>
 #include "Interp.hpp"
 
-namespace mpm {
+namespace mpm
+{
 
 // Projection, Singular Values, SVD's U, SVD's V transpose
-static inline void oriented_svd( const Eigen::Matrix3d &F, Eigen::Vector3d &S, Eigen::Matrix3d &U, Eigen::Matrix3d &Vt ){
+static inline void projected_svd(const Eigen::Matrix3d &F, Eigen::Vector3d &S, Eigen::Matrix3d &U, Eigen::Matrix3d &Vt)
+{
 	using namespace Eigen;
-	JacobiSVD< Matrix3d > svd( F, ComputeFullU | ComputeFullV );
+	JacobiSVD<Matrix3d> svd(F, ComputeFullU | ComputeFullV);
 	S = svd.singularValues();
 	U = svd.matrixU();
 	Vt = svd.matrixV().transpose();
 	Matrix3d J = Matrix3d::Identity(); J(2,2)=-1.0;
 	// Check for inversion
-	if( U.determinant() < 0.0 ){ U = U * J; S[2] *= -1.0; }
-	if( Vt.determinant() < 0.0 ){ Vt = J * Vt; S[2] *= -1.0; }
+	if(U.determinant() < 0.0) { U = U * J; S[2] *= -1.0; }
+	if(Vt.determinant() < 0.0) { Vt = J * Vt; S[2] *= -1.0; }
 
-} // end oriented svd
+} // end projected svd
 
 
 // Particle (material point) class
-class Particle {
+class Particle
+{
 public:
-	Particle() : m(0.1), vol(0.0), v(0,0,0), x(0,0,0) {
+	Particle() : m(0.1), vol(0.0), v(0,0,0), x(0,0,0)
+	{
 		Fe = Eigen::Matrix3d::Identity();
 		tempP = Eigen::Matrix3d::Identity();
 		B.setZero();
 		D.setZero();
 	}
 
-	virtual Eigen::Matrix3d get_piola_stress( Eigen::Matrix3d &currF ) const = 0;
-	virtual double get_energy_density( Eigen::Matrix3d &newF ) const = 0;
+	virtual Eigen::Matrix3d get_piola_stress(Eigen::Matrix3d &currF) const = 0;
+	virtual double get_energy_density(Eigen::Matrix3d &newF) const = 0;
 	virtual Eigen::Matrix3d get_deform_grad(){ return Fe; }
-	virtual void update_deform_grad( Eigen::Matrix3d velocity_grad, double timestep_s ){
-		Fe = ( Eigen::Matrix3d::Identity() + timestep_s*velocity_grad ) * Fe;
+	virtual void update_deform_grad(Eigen::Matrix3d velocity_grad, double timestep_s)
+	{
+		Fe = (Eigen::Matrix3d::Identity() + timestep_s*velocity_grad) * Fe;
 	}
 
 	double m; // mass
@@ -69,57 +74,62 @@ public:
 
 	Eigen::Matrix3d tempP; // temporary piola stress tensor computed by solver
 	Eigen::Matrix3d Fe; // elastic deformation gradient
-protected:
-
 };
 
 // NeoHookean Particle
-class pNeoHookean : public Particle {
+class pNeoHookean : public Particle
+{
 public:
 
 	pNeoHookean() : mu(10), lambda(10) {}
 	double mu;
 	double lambda;
 
-	Eigen::Matrix3d get_piola_stress( Eigen::Matrix3d &currF ) const {
-
+	inline Eigen::Matrix3d get_piola_stress( Eigen::Matrix3d &currF ) const
+	{
 		// Fix inversions:
 		Eigen::Matrix3d U, Vt, Ftemp;
 		Eigen::Vector3d S;
-		oriented_svd( currF, S, U, Vt );
-		if( S[2] < 0.0 ){ S[2] *= -1.0; }
+		projected_svd(currF, S, U, Vt);
+		if (S[2] < 0.0) { S[2] *= -1.0; }
 		Ftemp = U * S.asDiagonal() * Vt;
 
 		// Compute Piola stress tensor:
 		double J = Ftemp.determinant();
-		assert( isreal(J) );
-		assert( J>0.0 );
-		Eigen::Matrix3d Fit = ( Ftemp.inverse() ).transpose(); // F^(-T)
+		assert(isreal(J));
+		assert(J>0.0);
+		Eigen::Matrix3d Fit = (Ftemp.inverse()).transpose(); // F^(-T)
 		Eigen::Matrix3d P = mu*(Ftemp-Fit) + lambda*(log(J)*Fit);
-		for( int i=0; i<3; ++i ){ for( int j=0; j<3; ++j ){ assert( isreal(P(i,j)) ); } }
+		for (int i=0; i<3; ++i)
+		{
+			for(int j=0; j<3; ++j)
+			{
+				assert(isreal(P(i,j)));
+			}
+		}
 		return P;
 
 	} // end compute piola stress tensor
 
-	double get_energy_density( Eigen::Matrix3d &newF ) const {
-
+	inline double get_energy_density(Eigen::Matrix3d &newF) const
+	{
 		// Fix inversions:
 		Eigen::Matrix3d U, Vt, Ftemp;
 		Eigen::Vector3d S;
-		oriented_svd( newF, S, U, Vt );
-		if( S[2] < 0.0 ){ S[2] *= -1.0; }
+		projected_svd(newF, S, U, Vt);
+		if (S[2] < 0.0) { S[2] *= -1.0; }
 		Ftemp = U * S.asDiagonal() * Vt;
 
 		// Compute energy density:
 		double J = Ftemp.determinant();
-		assert( isreal(J) );
-		assert( J>0.0 );
-		double t1 = 0.5*mu*( ( Ftemp.transpose()*Ftemp ).trace() - 3.0 );
+		assert(isreal(J));
+		assert(J>0.0);
+		double t1 = 0.5*mu*((Ftemp.transpose()*Ftemp).trace() - 3.0);
 		double t2 = -mu * log(J);
-		double t3 = 0.5*lambda*( log(J)*log(J) );
-		assert( isreal(t1) );
-		assert( isreal(t2) );
-		assert( isreal(t3) );
+		double t3 = 0.5*lambda*(log(J)*log(J));
+		assert(isreal(t1));
+		assert(isreal(t2));
+		assert(isreal(t3));
 		return (t1+t2+t3);
 
 	} // end compute energy density

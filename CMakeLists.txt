@@ -19,22 +19,14 @@
 #
 # By Matt Overby (http://www.mattoverby.net)
 
-cmake_minimum_required(VERSION 2.6)
+cmake_minimum_required(VERSION 3.0)
 project(mpm C CXX)
 
-#
-#	Build Mode
-#
-set( CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake" ${CMAKE_MODULE_PATH} )
-set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11" )
-set( CMAKE_BUILD_TYPE Release )
+set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake" ${CMAKE_MODULE_PATH})
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+set(CMAKE_BUILD_TYPE Release)
 
-#
-#	Variables
-#
-
-add_definitions( -DMPM_SRC_DIR="${CMAKE_CURRENT_SOURCE_DIR}" )
-
+add_definitions(-DMPM_SRC_DIR="${CMAKE_CURRENT_SOURCE_DIR}")
 
 ############################################################
 #
@@ -42,31 +34,48 @@ add_definitions( -DMPM_SRC_DIR="${CMAKE_CURRENT_SOURCE_DIR}" )
 #
 ############################################################
 
-
-# Eigen3
-find_package( Eigen3 REQUIRED )
-include_directories( ${EIGEN3_INCLUDE_DIR} )
+# libigl for rendering
+include(DownloadProject)
+option(LIBIGL_USE_STATIC_LIBRARY "Use libigl as static library" OFF) # off = header only
+option(LIBIGL_WITH_COMISO            "Use CoMiso"                   OFF)
+option(LIBIGL_WITH_EMBREE            "Use Embree"                   OFF)
+option(LIBIGL_WITH_OPENGL            "Use OpenGL"                   ON)
+option(LIBIGL_WITH_OPENGL_GLFW       "Use GLFW"                     ON)
+option(LIBIGL_WITH_OPENGL_GLFW_IMGUI "Use ImGui"                    OFF)
+option(LIBIGL_WITH_PNG               "Use PNG"                      OFF)
+option(LIBIGL_WITH_TETGEN            "Use Tetgen"                   OFF)
+option(LIBIGL_WITH_TRIANGLE          "Use Triangle"                 OFF)
+option(LIBIGL_WITH_PREDICATES        "Use exact predicates"         OFF)
+option(LIBIGL_WITH_XML               "Use XML"                      OFF)
+download_project(PROJ libigl
+	GIT_REPOSITORY https://github.com/libigl/libigl.git
+	GIT_TAG main
+	UPDATE_DISCONNECTED 1
+	QUIET)
+add_subdirectory(${libigl_SOURCE_DIR} ${libigl_BINARY_DIR})
 
 # OpenMP
 find_package(OpenMP)
 if (OPENMP_FOUND)
 	set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
 	set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
-	add_definitions( -DOMP_NESTED )
+	add_definitions(-DOMP_NESTED)
 endif()
 
-# CppOptimizationLibrary (header only)
-set( CPPMIN_DIR "${CMAKE_CURRENT_SOURCE_DIR}/deps/cppoptlib" )
-include_directories( ${CPPMIN_DIR}/include )
+# Include headers
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src)
+include_directories(SYSTEM ${CMAKE_CURRENT_SOURCE_DIR}/deps/mcloptlib/include)
+include_directories(SYSTEM ${glad_SOURCE_DIR}/include)
+include_directories(SYSTEM ${libigl_SOURCE_DIR}/include)
+include_directories(SYSTEM ${libigl_SOURCE_DIR}/external/eigen)
 
-include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/src )
-set( MPM_SRCS
-	src/Solver.hpp			src/Solver.cpp
-	src/MPM.hpp			src/MPM.cpp
+set(MPM_SRCS
+	src/Solver.hpp
+	src/Solver.cpp
+	src/MPM.hpp
+	src/MPM.cpp
 	src/Interp.hpp
-	src/Particle.hpp
-)
-
+	src/Particle.hpp)
 
 ############################################################
 #
@@ -74,7 +83,5 @@ set( MPM_SRCS
 #
 ############################################################
 
-add_executable( sphere src/sphere.cpp ${MPM_SRCS} )
-target_link_libraries( sphere ${MPM_LIBRARIES} )
-
-
+add_executable(sphere src/sphere.cpp ${MPM_SRCS})
+target_link_libraries(sphere glad glfw)
