@@ -1,9 +1,9 @@
 # mpm-optimiziation
 
 Optimization-based implicit material point method with APIC,
-implemented from: [SIGGRAPH course notes](http://web.cs.ucla.edu/~cffjiang/mpmcourse/mpm_course_nodes.pdf),
-[Optimization Integrator for Large Time Steps](https://www.math.ucla.edu/~jteran/papers/GSSJT15.pdf),
-and [The Affine Particle-In-Cell Method](https://disney-animation.s3.amazonaws.com/uploads/production/publication_asset/104/asset/apic-aselle-final.pdf).
+implemented from: [SIGGRAPH course notes](https://dl.acm.org/doi/abs/10.1145/2897826.2927348),
+[Optimization Integrator for Large Time Steps](https://dl.acm.org/doi/10.5555/2849517.2849523),
+and [The Affine Particle-In-Cell Method](https://dl.acm.org/doi/10.1145/2766996).
 
 ***2021 Update***: I've copied the original blog post to this readme, updated code formatting, added rendering with libigl, and switched to [mcloptlib](https://github.com/mattoverby/mcloptlib)'s LBFGS.
 I wrote this in 2016 as an exercise, so please don't hold it against me :smile:.
@@ -12,7 +12,7 @@ I wrote this in 2016 as an exercise, so please don't hold it against me :smile:.
 
 The Material Point Method (MPM) is a powerful technique for physics simulation.
 MPM is great for continuum substances like fluids and soft bodies, as well as for dealing with complex problems like fracture and self collisions.
-It has received a lot of attention in computer graphics, spurred mostly by the [snow simulation](https://www.disneyanimation.com/publications/a-material-point-method-for-snow-simulation) paper.
+It has received a lot of attention in computer graphics, spurred mostly by the [snow simulation](https://doi.org/10.1145/2461912.2461948) paper.
 
 Some time around 2016 I coded up MPM to test out some research ideas, and wrote a little text to go along with it.
 My ideas didn't work out, but I put this code up on github instead of letting it collect metaphorical dust on my hard drive.
@@ -25,7 +25,7 @@ The basic idea is that particles move around the domain and carry mass.
 When it's time to do time integration, the particle mass/momentum is mapped to a grid.
 New velocities are computed on the grid, then mapped back to the particles, which are then advected.
 The grid essentially acts as a scratch pad for simulation that is cleared and reset each time step.
-For a (better) background on MPM, read the introduction chapter from the [SIGGRAPH course notes](http://alexey.stomakhin.com/research/siggraph2016_mpm.pdf).
+For a (better) background on MPM, read the introduction chapter from the [SIGGRAPH course notes](https://dl.acm.org/doi/abs/10.1145/2897826.2927348).
 
 ### Time integration
 
@@ -41,7 +41,7 @@ This is computationally expensive and time consuming, especially for large and c
 Fortunately, many important forces (like elasticity) are conservative.
 Mathematically, that means we can represent the forces as the negative gradient of potential energy.
 By representing our forces as energy potentials, we can do implicit time integration by minimizing the total system energy.
-The concept itself is not new, but was recently applied to Finite Elements/MPM in a paper by [Gast et al.](https://www.math.ucla.edu/%7Ejteran/papers/GSSJT15.pdf).
+The concept itself is not new, but was recently applied to Finite Elements/MPM in a paper by [Gast et al.](https://dl.acm.org/doi/10.5555/2849517.2849523).
 Section 6 of the paper covers the algorithm for optimization-based MPM.
 One thing to keep in mind: in MPM the velocity calculations happen on grid nodes, not grid boundaries.
 
