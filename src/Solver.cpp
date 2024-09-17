@@ -218,7 +218,7 @@ double Objective::gradient(const Eigen::VectorXd &v, Eigen::VectorXd &grad)
 		Eigen::Vector3d energy_grad(0,0,0);
 
 		for(int j=0; j<node->particles.size(); ++j){
-			energy_grad += node->particles[j]->tempP * node->dwip[j];
+			energy_grad += node->particles[j]->tempP * node->dwip[j] * MPM::timestep_s;
 		}
 
 		if (grad.rows() == v.rows())
