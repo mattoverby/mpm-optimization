@@ -8,6 +8,45 @@ and [The Affine Particle-In-Cell Method](https://dl.acm.org/doi/10.1145/2766996)
 ***2021 Update***: I've copied the original blog post to this readme, updated code formatting, added rendering with libigl, and switched to [mcloptlib](https://github.com/mattoverby/mcloptlib)'s LBFGS.
 I wrote this in 2016 as an exercise, so please don't hold it against me :smile:.
 
+## Build
+
+If you haven't installed Vcpkg, you can clone the repository with the following command:
+
+```shell
+mkdir ~/Toolchain
+cd ~/Toolchain
+git clone https://github.com/microsoft/vcpkg.git
+cd vcpkg
+# if windows
+./bootstrap-vcpkg.bat
+# if linux/macos
+./bootstrap-vcpkg.sh
+```
+The simplest way to let CMake detect Vcpkg is to set the **System Environment Variable** `CMAKE_TOOLCHAIN_FILE` to `~/Toolchain/vcpkg/scripts/buildsystems/vcpkg.cmake`
+
+You can set the environment variable in the PowerShell(Windows):
+
+```shell
+# In PowerShell: Permanently set the environment variable
+[System.Environment]::SetEnvironmentVariable("CMAKE_TOOLCHAIN_FILE", "~/Toolchain/vcpkg/scripts/buildsystems/vcpkg.cmake", "User")
+```
+
+or in the bash shell(Linux/MacOS):
+
+```shell
+# Write in ~/.bashrc
+export CMAKE_TOOLCHAIN_FILE="$HOME/Toolchain/vcpkg/scripts/buildsystems/vcpkg.cmake"
+```
+
+### Build Project
+To build the project, run the following commands in your terminal:
+
+```shell
+mkdir build; cd build;
+cmake -S .. # this step will download and install all dependencies for you
+cmake --build . --config Release
+```
+
 ## Optimization-Based Material Point Method
 
 The Material Point Method (MPM) is a powerful technique for physics simulation.
@@ -26,6 +65,7 @@ When it's time to do time integration, the particle mass/momentum is mapped to a
 New velocities are computed on the grid, then mapped back to the particles, which are then advected.
 The grid essentially acts as a scratch pad for simulation that is cleared and reset each time step.
 For a (better) background on MPM, read the introduction chapter from the [SIGGRAPH course notes](https://dl.acm.org/doi/abs/10.1145/2897826.2927348).
+
 
 ### Time integration
 

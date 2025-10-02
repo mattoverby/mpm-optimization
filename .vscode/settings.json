@@ -1,0 +1,15 @@
+{
+    // Disable C++ extension IntelliSense in favor of clangd
+    "C_Cpp.intelliSenseEngine": "disabled",
+    
+    // Clangd configuration
+    "clangd.path": "clangd",
+    "clangd.arguments": [
+        "--compile-commands-dir=${workspaceFolder}/build",
+        "--background-index",
+        "--clang-tidy",
+        "--completion-style=detailed",
+        "--header-insertion=iwyu",
+        "--pch-storage=memory"
+    ]
+}
