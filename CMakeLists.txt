@@ -25,6 +25,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 set(CMAKE_BUILD_TYPE Release)
 
 add_definitions(-DMPM_SRC_DIR="${CMAKE_CURRENT_SOURCE_DIR}")
+option(MPM_TESTING_ONLY "Only compile lib and tests" OFF)
 
 ############################################################
 #
@@ -32,25 +33,8 @@ add_definitions(-DMPM_SRC_DIR="${CMAKE_CURRENT_SOURCE_DIR}")
 #
 ############################################################
 
-# libigl for rendering
-include(DownloadProject)
-option(LIBIGL_USE_STATIC_LIBRARY "Use libigl as static library" OFF) # off = header only
-option(LIBIGL_WITH_COMISO            "Use CoMiso"                   OFF)
-option(LIBIGL_WITH_EMBREE            "Use Embree"                   OFF)
-option(LIBIGL_WITH_OPENGL            "Use OpenGL"                   ON)
-option(LIBIGL_WITH_OPENGL_GLFW       "Use GLFW"                     ON)
-option(LIBIGL_WITH_OPENGL_GLFW_IMGUI "Use ImGui"                    OFF)
-option(LIBIGL_WITH_PNG               "Use PNG"                      OFF)
-option(LIBIGL_WITH_TETGEN            "Use Tetgen"                   OFF)
-option(LIBIGL_WITH_TRIANGLE          "Use Triangle"                 OFF)
-option(LIBIGL_WITH_PREDICATES        "Use exact predicates"         OFF)
-option(LIBIGL_WITH_XML               "Use XML"                      OFF)
-download_project(PROJ libigl
-	GIT_REPOSITORY https://github.com/libigl/libigl.git
-	GIT_TAG main
-	UPDATE_DISCONNECTED 1
-	QUIET)
-add_subdirectory(${libigl_SOURCE_DIR} ${libigl_BINARY_DIR})
+# Libigl also includes Eigen, etc
+include(libigl)
 
 # OpenMP
 find_package(OpenMP)
@@ -60,20 +44,18 @@ if (OPENMP_FOUND)
 	add_definitions(-DOMP_NESTED)
 endif()
 
-# Include headers
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src)
-include_directories(SYSTEM ${CMAKE_CURRENT_SOURCE_DIR}/deps/mcloptlib/include)
-include_directories(SYSTEM ${glad_SOURCE_DIR}/include)
-include_directories(SYSTEM ${libigl_SOURCE_DIR}/include)
-include_directories(SYSTEM ${libigl_SOURCE_DIR}/external/eigen)
+set(MPM_SRC
+	${CMAKE_CURRENT_SOURCE_DIR}/src/LBFGS.hpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/Solver.hpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/Solver.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/MPM.hpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/MPM.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/Interp.hpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/Particle.hpp)
 
-set(MPM_SRCS
-	src/Solver.hpp
-	src/Solver.cpp
-	src/MPM.hpp
-	src/MPM.cpp
-	src/Interp.hpp
-	src/Particle.hpp)
+
+add_library(mpm_optimization ${MPM_SRC})
+target_link_libraries(mpm_optimization PUBLIC igl::core)
 
 ############################################################
 #
@@ -81,5 +63,13 @@ set(MPM_SRCS
 #
 ############################################################
 
-add_executable(sphere src/sphere.cpp ${MPM_SRCS})
-target_link_libraries(sphere glad glfw)
+if (NOT MPM_TESTING_ONLY)
+	igl_include(glfw)
+	add_executable(sphere ${CMAKE_CURRENT_SOURCE_DIR}/src/sphere.cpp)
+	target_link_libraries(sphere PUBLIC mpm_optimization igl::glfw)
+endif()
+
+enable_testing()
+add_executable(test_solver ${CMAKE_CURRENT_SOURCE_DIR}/test/solver.cpp)
+target_link_libraries(test_solver PUBLIC mpm_optimization)
+add_test(NAME TestSolver COMMAND test_solver)

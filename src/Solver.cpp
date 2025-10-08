@@ -22,30 +22,6 @@
 namespace mpm
 {
 
-// The system as represented by an optimization problem for generic solvers
-class Objective : public mcl::optlib::Problem<double,Eigen::Dynamic>
-{
-public:
-	Objective(Solver *solver_) : solver(solver_) {}
-	Solver *solver;
-
-	double value(const Eigen::VectorXd &v)
-	{
-		Eigen::VectorXd grad;
-		return gradient(v,grad);
-	}
-
-	bool converged(const Eigen::VectorXd &x0, const Eigen::VectorXd &x1, const Eigen::VectorXd &grad)
-	{
-		if (grad.norm() < 1e-2) { return true; }
-		if ((x0-x1).norm() < 1e-2) { return true; }
-		return false;
-	}
-
-	double gradient(const Eigen::VectorXd &v, Eigen::VectorXd &grad);
-
-}; // end class Objective
-
 bool Solver::initialize()
 {
 	// Fill a sphere with particles
@@ -78,8 +54,6 @@ bool Solver::initialize()
 	std::cout << "Num Particles: " << m_particles.size() << std::endl;
 	std::cout << "Num Nodes: " << m_grid.size() << std::endl;
 
-	// Set up the solver
-	optimizer.m_settings.ls_method = mcl::optlib::LSMethod::Backtracking;
 
 	return true;
 }
@@ -169,7 +143,7 @@ void Solver::explicit_solve()
 } // end compute forces
 
 
-double Objective::gradient(const Eigen::VectorXd &v, Eigen::VectorXd &grad)
+double Solver::gradient(const Eigen::VectorXd &v, Eigen::VectorXd &grad)
 {
 	using namespace Eigen;
 	double tot_energy = 0.0;
@@ -178,8 +152,8 @@ double Objective::gradient(const Eigen::VectorXd &v, Eigen::VectorXd &grad)
 	//	Compute Particle Deformation Gradients for new grid velocities
 	//
 #pragma omp parallel for reduction (+:tot_energy)
-	for(int i=0; i<solver->m_particles.size(); ++i){
-		Particle *p = solver->m_particles[i];
+	for(int i=0; i<m_particles.size(); ++i){
+		Particle *p = m_particles[i];
 		Eigen::Matrix3d p_F = p->get_deform_grad();
 
 		Matrix3d vel_grad; vel_grad.fill(0.f);
@@ -190,7 +164,7 @@ double Objective::gradient(const Eigen::VectorXd &v, Eigen::VectorXd &grad)
 		MPM::make_grid_loop(p, grid_nodes, wip, dwip);
 		for(int j=0; j<grid_nodes.size(); ++j)
 		{
-			int idx = solver->m_grid[ grid_nodes[j] ]->active_idx;
+			int idx = m_grid[ grid_nodes[j] ]->active_idx;
 			Eigen::Vector3d curr_v(v[idx*3+0], v[idx*3+1], v[idx*3+2]);
 			vel_grad += (MPM::timestep_s*curr_v) * dwip[j].transpose();
 		}
@@ -209,9 +183,9 @@ double Objective::gradient(const Eigen::VectorXd &v, Eigen::VectorXd &grad)
 	//	Compute energy gradient
 	//
 #pragma omp parallel for reduction (+:tot_energy)
-	for(int i=0; i<solver->active_grid.size(); ++i)
+	for(int i=0; i<active_grid.size(); ++i)
 	{
-		GridNode *node = solver->active_grid[i];
+		GridNode *node = active_grid[i];
 		Eigen::Vector3d curr_v(v[i*3+0], v[i*3+1], v[i*3+2]);
 
 		Eigen::Vector3d momentum_grad = node->m * (curr_v - node->v);
@@ -249,8 +223,13 @@ void Solver::implicit_solve()
 	}
 
 	// Minimize
-	Objective obj(this);
-	optimizer.minimize(obj, v);
+	optimizer.gradient = [&](const VectorXd &x, VectorXd &g)->double
+	{
+		double objective = gradient(x, g);
+		return objective;
+	};	
+
+	optimizer.minimize(v);
 
 	// Copy solver results back to grid
 #pragma omp parallel for

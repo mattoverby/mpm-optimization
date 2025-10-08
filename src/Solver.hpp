@@ -21,7 +21,7 @@
 #define MPM_SOLVER_HPP 1
 
 #include "MPM.hpp"
-#include "MCL/LBFGS.hpp"
+#include "LBFGS.hpp"
 
 namespace mpm
 {
@@ -41,7 +41,7 @@ public:
 	std::vector<GridNode*> active_grid; // resized each time step
 	std::vector<Particle*> m_particles;
 	void get_vertices(Eigen::MatrixXd &X) const;
-	mcl::optlib::LBFGS<double,Eigen::Dynamic> optimizer;
+	mcl::LBFGS<Eigen::VectorXd> optimizer;
 
 	//
 	//	Settings
@@ -61,6 +61,9 @@ public:
 	// Returns true on success.
 	bool step(float screen_dt);
 
+	// Gradient of the objective.
+	double gradient(const Eigen::VectorXd &v, Eigen::VectorXd &grad);
+
 private:
 
 	double compute_timestep(double screen_dt);
@@ -72,7 +75,7 @@ private:
 	void explicit_solve();
 	void implicit_solve();
 
-}; // end class system
+}; // end class solver
 
 } // end namespace mpm
 

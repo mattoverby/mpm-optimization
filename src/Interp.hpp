@@ -20,7 +20,7 @@
 #ifndef INTERP_HPP
 #define INTERP_HPP 1
 
-#include <Eigen/Dense>
+#include <Eigen/Core>
 #include <vector>
 
 namespace mpm

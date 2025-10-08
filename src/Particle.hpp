@@ -22,6 +22,7 @@
 
 #include <iostream>
 #include <memory>
+#include <Eigen/SVD>
 #include "Interp.hpp"
 
 namespace mpm
