@@ -1,0 +1,30 @@
+name: Build and Test
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build_and_test:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: clone
+      uses: actions/checkout@v4 # Action to check out your repository
+
+    - name: dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y build-essential cmake
+
+    - name: build
+      working-directory: ${{ github.workspace }} 
+      run: |
+        cmake -DMPM_TESTING_ONLY=ON .
+        make -j
+
+    - name: test
+      working-directory: ${{ github.workspace }} 
+      run: make test
