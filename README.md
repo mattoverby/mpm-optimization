@@ -15,7 +15,7 @@ MPM is great for continuum substances like fluids and soft bodies, as well as fo
 It has received a lot of attention in computer graphics, spurred mostly by the [snow simulation](https://doi.org/10.1145/2461912.2461948) paper.
 
 Some time around 2016 I coded up MPM to test out some research ideas, and wrote a little text to go along with it.
-My ideas didn't work out, but I put this code up on github instead of letting it collect metaphorical dust on my hard drive.
+My ideas didn't work out, but I put this code up on github instead of letting it collect dust on my hard drive.
 It is not efficient nor bug free.
 The demo is nothing more than a big neo-Hookean blob dropped on a ground plane.
 
