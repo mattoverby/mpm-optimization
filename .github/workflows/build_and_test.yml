@@ -12,7 +12,7 @@ jobs:
 
     steps:
     - name: clone
-      uses: actions/checkout@v4 # Action to check out your repository
+      uses: actions/checkout@v4
 
     - name: dependencies
       run: |

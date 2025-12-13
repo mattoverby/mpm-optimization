@@ -5,8 +5,15 @@ implemented from: [SIGGRAPH course notes](https://dl.acm.org/doi/abs/10.1145/289
 [Optimization Integrator for Large Time Steps](https://dl.acm.org/doi/10.5555/2849517.2849523),
 and [The Affine Particle-In-Cell Method](https://dl.acm.org/doi/10.1145/2766996).
 
-***2021 Update***: I've copied the original blog post to this readme, updated code formatting, added rendering with libigl, and switched to [mcloptlib](https://github.com/mattoverby/mcloptlib)'s LBFGS.
-I wrote this in 2016 as an exercise, so please don't hold it against me :smile:.
+***2021 Update***: I've copied the original blog post to this readme, updated code formatting, added rendering with libigl, and switched to a new LBFGS implementation.
+I wrote this in 2016 as a learning exercise; no promises on efficiency or correctness :wink:.
+
+## Compiling
+
+```
+mkdir build && cd build && cmake -DCMAKE_BUILD_TYPE=Release .. && make -j
+./sphere
+```
 
 ## Optimization-Based Material Point Method
 
@@ -15,8 +22,7 @@ MPM is great for continuum substances like fluids and soft bodies, as well as fo
 It has received a lot of attention in computer graphics, spurred mostly by the [snow simulation](https://doi.org/10.1145/2461912.2461948) paper.
 
 Some time around 2016 I coded up MPM to test out some research ideas, and wrote a little text to go along with it.
-My ideas didn't work out, but I put this code up on github instead of letting it collect metaphorical dust on my hard drive.
-It is not efficient nor bug free.
+My ideas didn't work out, but I put this code up on github instead of letting it collect dust on my hard drive.
 The demo is nothing more than a big neo-Hookean blob dropped on a ground plane.
 
 ### Overview
@@ -50,14 +56,14 @@ One thing to keep in mind: in MPM the velocity calculations happen on grid nodes
 Mapping to/from the grid is an important part of the material point method.
 MPM was originally an extension of Fluid Implicit Particle (FLIP), which in turn was an extension of the Particle in Cell (PIC) method.
 PIC and FLIP are the standard in fluid simulation, and were used in the above Gast paper.
-Mike Seymour wrote [a good article on fxguide](https://www.fxguide.com/fxfeatured/the-science-of-fluid-sims/) that covers what PIC/FLIP is and why they are useful.
+Mike Seymour wrote [a good article on fxguide](https://www.fxguide.com/fxfeatured/the-science-of-fluid-sims/) that covers what PIC/FLIP are and why they are useful.
 However, they suffer from a few well known limitations.
 Namely, PIC causes things to "clump" together, and FLIP can be unstable.
 
 A technique called the [affine particle in cell (APIC)](https://dl.acm.org/doi/10.1145/2766996) was recently introduced to combat these limitations.
 It's more stable and does a better job at conserving momentum.
-In short, it's worth using. To do so, you only need to make a few subtle changes to the MPM algorithm.
-The SIGGRAPH course notes explain what to change, but the Gast paper does not.
+Implementation-wise, it's only a few subtle changes to the MPM algorithm, namely adding a per-particle affine matrix.
+The SIGGRAPH course notes explain this and other changes.
 
 ## Implementation
 
@@ -66,6 +72,6 @@ If you've ever done fluid simulation with PIC/FLIP, it should be straight forwar
 
 1. It seemed to help with stability to have a cell size large enough to fit 8-16 particles.
 2. Keep a fully-allocated grid as the domain boundary, but do minimization on a separate "active grid" list made up of pointers to grid nodes.
-3. A "make grid loop" function for particle/grid mapping: given a particle, return the indices of grid nodes within the kernel radius, as well as kernel smoothing values/derivatives. I felt this was the trickiest part of the whole method. Much of this can be preallocated if you have a lot of memory, but I found (in 3D) allocating/deallocating on the spot was helpful and easier to debug.
+3. A "make grid loop" function for particle/grid mapping: given a particle, return the indices of grid nodes within the kernel radius, as well as kernel smoothing values/derivatives. I felt this was the trickiest part of the whole method. Much of this can be preallocated but I found (in 3D) allocating/deallocating on the spot was helpful and easier to debug.
 
 The code uses libigl for rendering and Eigen for matrix/vector calculations. These are automatically downloaded with cmake.
