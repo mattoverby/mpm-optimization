@@ -2,11 +2,11 @@
 #include "Solver.hpp"
 
 // placeholder
-int main(int argc, char *argv[])
+int main(int argc, char* argv[])
 {
-	mpm::Solver solver;
+    mpm::Solver solver;
 
-	(void)(argc);
-	(void)(argv);
-	return EXIT_SUCCESS;
+    (void)(argc);
+    (void)(argv);
+    return EXIT_SUCCESS;
 }
